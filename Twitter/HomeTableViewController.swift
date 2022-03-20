@@ -20,13 +20,20 @@ class HomeTableViewController: UITableViewController {
         
         myRefreshControl.addTarget(self, action: #selector(loadTweets), for: .valueChanged)
         tableView.refreshControl = myRefreshControl
+        self.tableView.rowHeight = UITableView.automaticDimension
+        self.tableView.estimatedRowHeight = 150
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        self.loadTweets()
     }
     
     @objc func loadTweets(){
         let url = "https://api.twitter.com/1.1/statuses/home_timeline.json"
         numTweets = 20
         let params = ["count":numTweets]
-        TwitterAPICaller.client?.getDictionariesRequest(url: url, parameters: params, success: { (tweets:[NSDictionary]) in
+        TwitterAPICaller.client?.getDictionariesRequest(url: url, parameters: params as [String : Any], success: { (tweets:[NSDictionary]) in
             self.tweetsArray.removeAll()
             for tweet in tweets{
                 self.tweetsArray.append(tweet)
@@ -43,7 +50,7 @@ class HomeTableViewController: UITableViewController {
         let url = "https://api.twitter.com/1.1/statuses/home_timeline.json"
         numTweets = numTweets + 20
         let params = ["count":numTweets]
-        TwitterAPICaller.client?.getDictionariesRequest(url: url, parameters: params, success: { (tweets:[NSDictionary]) in
+        TwitterAPICaller.client?.getDictionariesRequest(url: url, parameters: params as [String : Any], success: { (tweets:[NSDictionary]) in
             self.tweetsArray.removeAll()
             for tweet in tweets{
                 self.tweetsArray.append(tweet)
@@ -79,6 +86,10 @@ class HomeTableViewController: UITableViewController {
         if let imageData = data {
             cell.profileImage.image = UIImage(data:imageData)
         }
+        
+        cell.setFavorite(tweetsArray[indexPath.row]["favorited"] as! Bool)
+        cell.tweetId = tweetsArray[indexPath.row]["id"] as! Int
+        cell.setRetweeted(tweetsArray[indexPath.row]["retweeted"] as! Bool)
         return cell
     }
     // MARK: - Table view data source
